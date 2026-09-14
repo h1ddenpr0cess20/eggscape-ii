@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#8ac0e0">
+<meta name="description" content="Eggscape the Farm — a 3D runner across the fields. Roll, hop, dodge the bales, pull up the crops.">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Eggscape the Farm</title>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<div id="hud" aria-hidden="true">
+  <div class="readout"><span class="label">score</span><b id="score">0</b></div>
+  <div class="readout"><span class="label">field</span><b id="distance">0m</b></div>
+  <div class="readout"><span class="label">crops</span><b id="crops">0</b></div>
+  <div class="readout"><span class="label">shells</span><b id="shells">●●●</b></div>
+</div>
+
+<button id="mute" type="button" aria-pressed="false">audio on</button>
+
+<section id="overlay" data-state="ready" aria-live="polite">
+  <div id="sign">
+    <p id="overlay-kicker">the gate was open…</p>
+    <h1>Eggscape<em>the farm</em></h1>
+    <p id="overlay-lead">The carton was only ever the beginning.</p>
+    <dl id="overlay-stats" hidden></dl>
+    <button id="play" type="button">run for it</button>
+    <ul id="keys">
+      <li><kbd>A</kbd><kbd>D</kbd> furrow</li>
+      <li><kbd>W</kbd> hop, twice to flip</li>
+      <li><kbd>S</kbd> slam — onto a bale to burst it</li>
+      <li><kbd>M</kbd> audio</li>
+      <li class="touch">swipe to move · tap to hop</li>
+    </ul>
+  </div>
+</section>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
