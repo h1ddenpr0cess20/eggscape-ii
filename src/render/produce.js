@@ -110,11 +110,12 @@ function apple(kind) {
 
 const GROWERS = [carrot, corn, tomato, pumpkin, aubergine, apple];
 
-/** One of the six, by the kind the course rolled for it. */
+/** One of the six, by the kind the course rolled for it. `GROWERS` and
+ *  `PRODUCE` are the same six in the same order, so one index reaches both. */
 export function createProduce(kind) {
-  const grow = GROWERS[kind % GROWERS.length];
-  const group = grow(kind % GROWERS.length);
-  group.name = PRODUCE[kind % PRODUCE.length].name;
+  const which = kind % GROWERS.length;
+  const group = GROWERS[which](which);
+  group.name = PRODUCE[which].name;
   return group;
 }
 

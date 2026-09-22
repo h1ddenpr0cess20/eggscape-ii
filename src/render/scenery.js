@@ -46,7 +46,7 @@ function fence(side, w, l) {
 let pattern = null;
 
 function scarecrow() {
-  if (pattern) return pattern.clone();
+  if (pattern) return copy(pattern);
 
   const group = new THREE.Group();
   group.name = 'scarecrow';
@@ -75,7 +75,18 @@ function scarecrow() {
   group.add(brim, crown);
 
   pattern = group;
-  return group.clone();
+  return copy(group);
+}
+
+/**
+ * A clone of the pattern, marked as sharing it. `disposePlot` frees the
+ * geometry of the plot it is pulling down, and without the mark it freed the
+ * buffers behind every other scarecrow standing in the field with it.
+ */
+function copy(group) {
+  const clone = group.clone();
+  clone.userData.shared = true;
+  return clone;
 }
 
 /**
