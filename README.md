@@ -79,6 +79,41 @@ in a furrow is a bale. What they can do is stand on something: every post is
 driven down the face of the plot's own bank, since there is no ground out
 there to plant it in.
 
+## The soundtrack
+
+There is no audio file in the repository, and there is music. `soundtrack.js`
+writes it down — one token per sixteenth, `g2 - . g3+b3+d4` — and `music.js`
+plays it on the same AudioContext the sound effects use, on instruments made
+of oscillators and noise. Nothing is built until the page has had a touch,
+because no browser will make a sound before one.
+
+It is a hoedown: an upright bass on one and three, a mandolin chop on two and
+four, a banjo rolling sixteenths over the both of them and a fiddle with the
+tune, in G, round the oldest changes there are. The banjo is a Karplus–Strong
+string — a burst of noise going round a delay line one period long, a little
+duller every time round — made once at boot and played back faster or slower
+for every other note, which also makes the high ones die sooner, the way a
+real string's do.
+
+The band turns up as you go. Bass, stomp and chop are there at the gate; the
+banjo arrives at a hundred metres, the washboard and the fiddle at three
+hundred, and at six hundred a second fiddle a third under the first and a barn
+full of clapping. The second fiddle's part is not written down anywhere: it is
+the first one moved two steps down the key, which is how the real one finds
+it. A bale muffles the lot for a second. Between runs it is the porch before
+the gate was open, a guitar picked slow and a harmonica and something in the
+hedge — and going over the side for the last time is shave and a haircut, and
+no two bits.
+
+The sequencer never plays anything at the moment it is asked to. It puts
+notes down a quarter of a second ahead on the audio clock, so a frame that
+hitches is not a note that arrives late — and further ahead than that when the
+frames are coming slowly, since a phone that is struggling is struggling on
+every one of them. A tab that comes back from the background drops what it
+missed and stays on the grid, rather than playing a minute of music at once.
+`M` mutes it with everything else, and it keeps time while it is off, so it
+comes back on the beat.
+
 ## How it holds together
 
 The run is a plain object graph with no pixels in it — course, egg, lives,
@@ -120,6 +155,8 @@ src/
     hud.js              The readouts and the sign between runs
     input.js            Keys and swipes → one frame of intent
     sound.js            Four oscillators' worth of barn dance
+    music.js            A sequencer that reads its parts out of strings
+    soundtrack.js       A hoedown in G, and a porch for the title
     best.js             The only thing that survives a run
 test/                 node:test, including an autopilot that proves seeds are fair
 ```
@@ -161,7 +198,7 @@ it is the reason the sky is mostly haze below the blue.
 | `npm run dev` | Vite |
 | `npm run build` | Bundles to `dist/` |
 | `npm run preview` | Serves the build |
-| `npm test` | `node:test` over the core, the box builder, the HUD and the page |
+| `npm test` | `node:test` over the core, the box builder, the HUD, the page and the music |
 | `npm run lint` | ESLint |
 
 CI runs the lint, the tests on Node 22.12 and 24, and a build that then has to
