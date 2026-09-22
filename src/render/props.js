@@ -56,9 +56,17 @@ export function createPlot(seg) {
   return group;
 }
 
-/** Materials are shared and stay; the geometry belongs to this plot. */
+/**
+ * Materials are shared and stay; the geometry belongs to this plot — except
+ * under a node the scenery has marked as shared, which is a clone of a
+ * pattern every other copy of it is drawn from. Pulling down one plot's
+ * scarecrow used to free the buffers behind every scarecrow in the field,
+ * and the driver quietly uploaded them all again on the next frame.
+ */
 export function disposePlot(group) {
-  group.traverse((node) => node.geometry?.dispose());
+  if (group.userData.shared) return;
+  group.geometry?.dispose();
+  for (const child of group.children) disposePlot(child);
 }
 
 /**

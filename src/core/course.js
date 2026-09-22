@@ -178,7 +178,7 @@ export function createCourse({ seed = 1, difficultyRun = DIFFICULTY_RUN } = {}) 
     const roll = rng();
     if (roll < 0.18) pasture();
     else if (roll < 0.42) windrow(d);
-    else if (roll < 0.62) ditch(d);
+    else if (roll < 0.62) ditch();
     else if (roll < 0.78) plank(d);
     else if (roll < 0.9) terrace(d);
     else gate(d);
