@@ -1,6 +1,7 @@
-import * as THREE from 'three';
-
 import { BALE } from '../core/tuning.js';
+import { linear } from '../gpu/color.js';
+import { cylinder, Geometry, plane, torus } from '../gpu/geometry.js';
+import { Group, Mesh } from '../gpu/graph.js';
 import { builder, FACE, tile } from './build.js';
 import { flat, matte, SURFACE } from './materials.js';
 import { dress } from './scenery.js';
@@ -20,23 +21,23 @@ const RIM = 0.26;
  * water, which is the only honest thing a strip of ground that narrow can be.
  */
 export function createPlot(seg) {
-  const group = new THREE.Group();
+  const group = new Group();
   group.name = `plot-${seg.id}`;
 
   const w = seg.xMax - seg.xMin;
   const l = seg.z1 - seg.z0;
   const boardwalk = seg.span === 1;
 
-  const top = new THREE.PlaneGeometry(w, l);
+  const top = plane(w, l);
   tile(top, boardwalk ? 1 : w / 2, boardwalk ? l / 1.4 : l / 2);
-  const deck = new THREE.Mesh(top, boardwalk ? SURFACE.wood() : SURFACE.soil());
+  const deck = new Mesh(top, boardwalk ? SURFACE.wood() : SURFACE.soil());
   deck.rotation.x = -Math.PI / 2;
   group.add(deck);
 
   /** The bank the plot is cut out of. No top face: the deck is the top. */
   const bank = builder();
   bank.box(0, -DEPTH / 2, 0, w, DEPTH, l, 63 & ~FACE.py);
-  group.add(new THREE.Mesh(bank.geometry(), boardwalk ? SURFACE.post() : SURFACE.earth()));
+  group.add(new Mesh(bank.geometry(), boardwalk ? SURFACE.post() : SURFACE.earth()));
 
   if (!boardwalk) {
     /** A verge of grass round the rim, standing a little over the soil. */
@@ -47,7 +48,7 @@ export function createPlot(seg) {
     verge.box(w / 2 + RIM / 2, y, 0, RIM, h, l + RIM * 2);
     verge.box(0, y, -l / 2 - RIM / 2, w, h, RIM);
     verge.box(0, y, l / 2 + RIM / 2, w, h, RIM);
-    group.add(new THREE.Mesh(verge.geometry(), matte(THEME.meadow)));
+    group.add(new Mesh(verge.geometry(), matte(THEME.meadow)));
   }
 
   for (const prop of dress(seg, w, l)) group.add(prop);
@@ -75,10 +76,10 @@ export function disposePlot(group) {
  * thing you can see.
  */
 export function createBale(kind = 0) {
-  const group = new THREE.Group();
+  const group = new Group();
   /** Scale lives on an inner group: the round one is stretched across the
    *  lane, and stretching the thing that also turns would shear it. */
-  const shape = new THREE.Group();
+  const shape = new Group();
   group.add(shape);
 
   const w = BALE.halfWidth * 2;
@@ -93,16 +94,16 @@ export function createBale(kind = 0) {
      * not read in time.
      */
     const r = BALE.height / 2;
-    const barrel = tile(new THREE.CylinderGeometry(r, r, d, 22, 1), 3, 1);
-    const roll = new THREE.Mesh(barrel, SURFACE.straw());
+    const barrel = tile(cylinder(r, r, d, 22, 1), 3, 1);
+    const roll = new Mesh(barrel, SURFACE.straw());
     roll.rotation.x = Math.PI / 2;
     roll.position.y = r;
     shape.add(roll);
 
     /** Net wrap, two hoops of it, thin enough to read as string. */
-    const hoop = new THREE.TorusGeometry(r * 1.01, 0.022, 6, 24);
+    const hoop = torus(r * 1.01, 0.022, 6, 24);
     for (const z of [-d * 0.28, d * 0.28]) {
-      const band = new THREE.Mesh(hoop, SURFACE.twine());
+      const band = new Mesh(hoop, SURFACE.twine());
       band.position.set(0, r, z);
       shape.add(band);
     }
@@ -110,7 +111,7 @@ export function createBale(kind = 0) {
     /** Two rings of the coil showing on the end the egg is coming at, which
      *  is the difference between a bale and a large biscuit. */
     for (const ring of [0.62, 0.34]) {
-      const coil = new THREE.Mesh(new THREE.TorusGeometry(r * ring, 0.018, 5, 22), SURFACE.twine());
+      const coil = new Mesh(torus(r * ring, 0.018, 5, 22), SURFACE.twine());
       coil.position.set(0, r, -d / 2 - 0.012);
       shape.add(coil);
     }
@@ -122,13 +123,13 @@ export function createBale(kind = 0) {
     const h = BALE.height * 0.92;
     const body = builder();
     body.box(0, h / 2, 0, w, h, d);
-    shape.add(new THREE.Mesh(tile(body.geometry(), 2, 2), SURFACE.straw()));
+    shape.add(new Mesh(tile(body.geometry(), 2, 2), SURFACE.straw()));
 
     const twine = builder();
     for (const x of [-w * 0.24, w * 0.24]) {
       twine.box(x, h / 2, 0, 0.04, h * 1.02, d * 1.02);
     }
-    shape.add(new THREE.Mesh(twine.geometry(), SURFACE.twine()));
+    shape.add(new Mesh(twine.geometry(), SURFACE.twine()));
   }
 
   return group;
@@ -147,10 +148,10 @@ export function createBale(kind = 0) {
  * has to run out of visibility before it runs out of fields.
  */
 export function createCountry({ half = 170, cell = 17, y = -24, random = Math.random } = {}) {
-  const group = new THREE.Group();
+  const group = new Group();
   group.name = 'country';
 
-  const base = new THREE.Mesh(new THREE.PlaneGeometry(half * 2, half * 2), flat({ color: THEME.hedge }));
+  const base = new Mesh(plane(half * 2, half * 2), flat({ color: THEME.hedge }));
   base.rotation.x = -Math.PI / 2;
   base.position.y = y - 0.1;
   group.add(base);
@@ -158,7 +159,6 @@ export function createCountry({ half = 170, cell = 17, y = -24, random = Math.ra
   const position = [];
   const color = [];
   const index = [];
-  const hue = new THREE.Color();
   const inset = 0.5;
 
   for (let x = -half; x < half; x += cell) {
@@ -169,19 +169,16 @@ export function createCountry({ half = 170, cell = 17, y = -24, random = Math.ra
       const z0 = z + inset;
       const z1 = z + cell - inset;
       position.push(x0, y, z0, x1, y, z0, x1, y, z1, x0, y, z1);
-      hue.setHex(THEME.quilt[(random() * THEME.quilt.length) | 0]);
+      const pick = THEME.quilt[(random() * THEME.quilt.length) | 0];
       /** A little lighter or darker per field, so the quilt is not a chessboard. */
-      hue.multiplyScalar(0.86 + random() * 0.28);
-      for (let i = 0; i < 4; i++) color.push(hue.r, hue.g, hue.b);
+      const hue = linear(pick, 0.86 + random() * 0.28);
+      for (let i = 0; i < 4; i++) color.push(...hue);
       index.push(base4, base4 + 2, base4 + 1, base4, base4 + 3, base4 + 2);
     }
   }
 
-  const fields = new THREE.BufferGeometry();
-  fields.setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
-  fields.setAttribute('color', new THREE.Float32BufferAttribute(color, 3));
-  fields.setIndex(index);
-  group.add(new THREE.Mesh(fields, flat({ vertexColors: true })));
+  const fields = new Geometry({ position, color, index });
+  group.add(new Mesh(fields, flat({ vertexColors: true })));
 
   return { object: group, spacing: cell };
 }

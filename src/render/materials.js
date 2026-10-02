@@ -1,5 +1,4 @@
-import * as THREE from 'three';
-
+import { BasicMaterial, StandardMaterial } from '../gpu/material.js';
 import { blot, texture } from './textures.js';
 import { THEME } from './theme.js';
 
@@ -14,12 +13,12 @@ const cache = new Map();
 export function matte(color, { map = null, roughness = 0.94, metalness = 0, glow = 0 } = {}) {
   const key = `${color}:${map}:${roughness}:${metalness}:${glow}`;
   if (!cache.has(key)) {
-    cache.set(key, new THREE.MeshStandardMaterial({
+    cache.set(key, new StandardMaterial({
       color,
       map: map ? texture(map) : null,
       roughness,
       metalness,
-      emissive: glow > 0 ? new THREE.Color(color) : new THREE.Color(0x000000),
+      emissive: glow > 0 ? color : 0x000000,
       emissiveIntensity: glow,
     }));
   }
@@ -51,7 +50,7 @@ export function produce(color) {
 /** The smudge under the egg. */
 export function shade() {
   if (!cache.has('shade')) {
-    cache.set('shade', new THREE.MeshBasicMaterial({
+    cache.set('shade', new BasicMaterial({
       map: blot(),
       color: 0xffffff,
       transparent: true,
@@ -65,6 +64,6 @@ export function shade() {
 /** Unlit and flat, for the country too far below to be lit by anything. */
 export function flat({ vertexColors = false, color = 0xffffff } = {}) {
   const key = `flat:${vertexColors}:${color}`;
-  if (!cache.has(key)) cache.set(key, new THREE.MeshBasicMaterial({ color, vertexColors }));
+  if (!cache.has(key)) cache.set(key, new BasicMaterial({ color, vertexColors }));
   return cache.get(key);
 }

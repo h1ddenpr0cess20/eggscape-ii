@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Texture } from '../gpu/texture.js';
 
 /**
  * The field's surfaces, painted once onto canvases the way the eggshell's
@@ -16,14 +16,9 @@ function paint(size, draw) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
   draw(ctx, size);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
   /** The soil is looked at almost edge-on for most of its life, which is
    *  exactly where a mipmap gives up — so it is worth the samples. */
-  texture.anisotropy = 16;
-  return texture;
+  return new Texture(canvas, { wrapS: 'repeat', wrapT: 'repeat', anisotropy: 16 });
 }
 
 /** Grit, in the colour and the quantity a surface wants. */
@@ -144,8 +139,8 @@ export function blot() {
     ctx.fillRect(0, 0, size, size);
   });
   if (made) {
-    made.wrapS = THREE.ClampToEdgeWrapping;
-    made.wrapT = THREE.ClampToEdgeWrapping;
+    made.wrapS = 'clamp';
+    made.wrapT = 'clamp';
   }
   cache.set('blot', made);
   return made;
