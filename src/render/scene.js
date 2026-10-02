@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-
+import { PerspectiveCamera, Scene } from '../gpu/graph.js';
+import { createRenderer } from '../gpu/renderer.js';
 import { buildEnvironment, buildLights } from './daylight.js';
 import { createSky } from './sky.js';
 import { THEME } from './theme.js';
@@ -11,22 +11,21 @@ import { THEME } from './theme.js';
  * the course to.
  */
 export function createScene(canvas) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  renderer.setClearColor(THEME.haze, 1);
+  const renderer = createRenderer(canvas, { clearColor: THEME.haze, antialias: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMapping = 'aces';
   renderer.toneMappingExposure = 1.16;
 
-  const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(THEME.haze, 48, 165);
+  const scene = new Scene();
+  scene.fog = { color: THEME.haze, near: 48, far: 165 };
 
   /** 52°, not the 64° this started on: a wide lens stretches whatever sits
    *  away from the middle of the frame, and what sits there is the egg. */
-  const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 320);
+  const camera = new PerspectiveCamera(52, 1, 0.1, 320);
   camera.position.set(0, 3.2, -8.4);
 
   const studio = buildLights(scene);
-  buildEnvironment(scene, renderer);
+  buildEnvironment(scene);
 
   const sky = createSky();
   if (sky) {

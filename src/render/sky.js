@@ -1,4 +1,7 @@
-import * as THREE from 'three';
+import { sphere } from '../gpu/geometry.js';
+import { Mesh } from '../gpu/graph.js';
+import { BasicMaterial } from '../gpu/material.js';
+import { Texture } from '../gpu/texture.js';
 
 const WIDTH = 1024;
 const HEIGHT = 512;
@@ -21,11 +24,8 @@ function cloud(ctx, x, y, w, h, alpha) {
 /**
  * The sky, painted once and hung on a sphere the camera sits inside.
  *
- * It is a dome rather than `scene.background`, which is not fussiness: three
- * runs an equirectangular background through PMREM, and PMREM is a blur —
- * it dragged the clouds down into the haze and left a bright seam lying
- * across the horizon in every frame. Owning the sphere costs forty triangles
- * and samples the canvas exactly as it was painted.
+ * It is a dome rather than a picture pinned behind the frame. The sphere
+ * costs forty triangles and samples the canvas exactly as it was painted.
  *
  * It is also why there is parallax at all. A texture pinned to the frame
  * cannot lean when the camera does, and a sky that never moves is the one
@@ -90,16 +90,13 @@ export function createSky({ random = Math.random } = {}) {
   ctx.fillStyle = glow;
   ctx.fillRect(sx - 200, sy - 200, 400, 400);
 
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.ClampToEdgeWrapping;
+  const texture = new Texture(canvas, { wrapS: 'repeat', wrapT: 'clamp' });
 
-  const dome = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 48, 24),
-    new THREE.MeshBasicMaterial({
+  const dome = new Mesh(
+    sphere(1, 48, 24),
+    new BasicMaterial({
       map: texture,
-      side: THREE.BackSide,
+      side: 'back',
       fog: false,
       depthWrite: false,
       depthTest: false,

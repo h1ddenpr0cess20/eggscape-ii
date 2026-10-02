@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+import { prefilterInBackground } from '../gpu/environment.js';
+import { DirectionalLight, Group, HemisphereLight } from '../gpu/graph.js';
 
 /**
  * An afternoon, as a cube map: warm above, field-green below, one bright
@@ -6,7 +7,7 @@ import * as THREE from 'three';
  * is what stops the shaded side of a bale going flat black — and it is also
  * what lights Marc's shell, in place of the studio he came out of.
  */
-export function buildEnvironment(scene, renderer) {
+export function buildEnvironment(scene) {
   try {
     const c = document.createElement('canvas');
     c.width = 64; c.height = 32;
@@ -19,13 +20,7 @@ export function buildEnvironment(scene, renderer) {
     ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 32);
     ctx.fillStyle = 'rgba(255,248,224,0.95)'; ctx.beginPath();
     ctx.ellipse(21, 6, 11, 5, 0, 0, Math.PI * 2); ctx.fill();
-    const tex = new THREE.Texture(c);
-    tex.mapping = THREE.EquirectangularReflectionMapping;
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.needsUpdate = true;
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromEquirectangular(tex).texture;
-    pmrem.dispose(); tex.dispose();
+    scene.environment = prefilterInBackground(c);
   } catch {
   }
 }
@@ -42,15 +37,15 @@ export function buildEnvironment(scene, renderer) {
  * as it is at the gate.
  */
 export function buildLights(scene) {
-  const rig = new THREE.Group();
+  const rig = new Group();
   rig.name = 'daylight';
 
-  const sky = new THREE.HemisphereLight(0xbcdcf4, 0x76913f, 1.15);
+  const sky = new HemisphereLight(0xbcdcf4, 0x76913f, 1.15);
 
-  const sun = new THREE.DirectionalLight(0xfff0d0, 2.3);
+  const sun = new DirectionalLight(0xfff0d0, 2.3);
   sun.position.set(6, 9, 4);
 
-  const bounce = new THREE.DirectionalLight(0xdce9ff, 0.8);
+  const bounce = new DirectionalLight(0xdce9ff, 0.8);
   bounce.position.set(-5, 3, -6);
 
   rig.add(sky, sun, sun.target, bounce, bounce.target);
